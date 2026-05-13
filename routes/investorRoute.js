@@ -1,27 +1,32 @@
-const express = require('express')
+const express = require("express");
 
 const {
-    createInvestor,
-    getInvestor,
-    getInvestorHoldings,
-    getInvestorNetworth,
-    login,
-    logout
-} = require('../controllers/investorController.js')
+  createInvestor,
+  getInvestor,
+  getInvestorHoldings,
+  getInvestorNetworth,
+  login,
+  logout,
+  getAllInvestors,
+  getInvestorAnalytics,
+} = require("../controllers/investorController.js");
 
-const router = express.Router()
+const router = express.Router();
 
-router.post('/login', login)
+router.post("/login", login);
 
-router.post('/logout', logout)
+router.post("/logout", logout);
 
-router.post('/', createInvestor)
+router.post("/", createInvestor);
 
-router.get('/:investorId/holdings', getInvestorHoldings)
+router.get("/analytics", getInvestorAnalytics);
 
-router.get('/:investorId/networth', getInvestorNetworth)
+router.get("/", getAllInvestors);
 
-router.get('/:investorId', getInvestor)
+router.get("/:investorId/holdings", getInvestorHoldings);
 
+router.get("/:investorId/networth", getInvestorNetworth);
 
-module.exports = router
+router.get("/:investorId", getInvestor);
+
+module.exports = router;

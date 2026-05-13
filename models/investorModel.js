@@ -29,8 +29,8 @@ const insertInvestor = (data) => {
           reject(err);
         } else {
           resolve({
-            success:true,
-            message: "Investor Created"
+            success: true,
+            message: "Investor Created",
           });
         }
       },
@@ -39,23 +39,138 @@ const insertInvestor = (data) => {
 };
 
 const fetchInvestor = async (investorId) => {
- try {
+  try {
     const query = `
       SELECT *
       FROM investors
       WHERE investor_id = $1
     `;
-    const result = await db.query(query,[investorId]);
+    const result = await db.query(query, [investorId]);
     return result.rows[0];
- } catch (error) {
+  } catch (error) {
     throw error;
- }
+  }
+};
+
+const fetchAllInvestors = async () => {
+  try {
+    const query = `
+
+      SELECT
+
+          investor_id
+          AS investor_id,
+
+          first_name || ' ' || last_name
+          AS investor_name,
+
+          email
+          AS email,
+
+          phone
+          AS phone,
+
+          pan_number
+          AS pan_number,
+
+          created_at
+          AS created_at
+
+      FROM investors
+
+      ORDER BY investor_id
+
+    `;
+
+    const result = await db.query(query);
+
+    return result.rows;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const fetchInvestorAnalytics = async () => {
+  try {
+    const query = `
+
+      SELECT
+
+          i.investor_id
+          AS investor_id,
+
+          i.first_name || ' ' || i.last_name
+          AS investor_name,
+
+          i.email
+          AS email,
+
+          SUM(t.transaction_amount)
+          AS amount_invested,
+
+          ROUND(
+              SUM(
+                  t.units_allocated * latest_nav.nav_value
+              ),
+              2
+          )
+          AS investor_holdings,
+
+          ROUND(
+              AVG(latest_nav.nav_value),
+              2
+          )
+          AS latest_nav
+
+      FROM investors i
+
+      JOIN transactions t
+      ON i.investor_id = t.investor_id
+
+      JOIN (
+
+          SELECT DISTINCT ON (fund_id)
+
+              fund_id,
+
+              nav_value,
+
+              nav_date
+
+          FROM nav_history
+
+          ORDER BY
+              fund_id,
+              nav_date DESC
+
+      ) latest_nav
+
+      ON t.fund_id = latest_nav.fund_id
+
+      GROUP BY
+
+          i.investor_id,
+
+          i.first_name,
+
+          i.last_name,
+
+          i.email
+
+      ORDER BY i.investor_id
+
+    `;
+
+    const result = await db.query(query);
+
+    return result.rows;
+  } catch (error) {
+    throw error;
+  }
 };
 
 const fetchHoldings = async (investorId) => {
-
   try {
-
     const query = `
       SELECT
         mf.fund_name,
@@ -97,17 +212,13 @@ const fetchHoldings = async (investorId) => {
     const result = await db.query(query, [investorId]);
 
     return result.rows;
-
-  } catch(err){
-
+  } catch (err) {
     throw err;
   }
 };
 
 const calculateNetworth = async (investorId) => {
-
   try {
-
     const query = `
       SELECT
         SUM(holding_value) AS networth
@@ -142,17 +253,13 @@ const calculateNetworth = async (investorId) => {
     const result = await db.query(query, [investorId]);
 
     return result.rows[0];
-
-  } catch(err){
-
+  } catch (err) {
     throw err;
   }
 };
 
 const loginUser = async (email) => {
-
   try {
-
     const query = `
       SELECT *
       FROM investors
@@ -162,9 +269,7 @@ const loginUser = async (email) => {
     const result = await db.query(query, [email]);
 
     return result.rows[0];
-
-  } catch(err){
-
+  } catch (err) {
     throw err;
   }
 };
@@ -178,6 +283,8 @@ const logoutUser = (token) => {
 module.exports = {
   insertInvestor,
   fetchInvestor,
+  fetchAllInvestors,
+  fetchInvestorAnalytics,
   fetchHoldings,
   calculateNetworth,
   loginUser,

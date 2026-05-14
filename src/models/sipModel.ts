@@ -1,9 +1,7 @@
-const db = require("../utility/dbManager");
+import db from "../utility/dbManager";
 
-const createSIP = async (data) => {
-
+export const createSIP = async (data: any) => {
   try {
-
     const query = `
       INSERT INTO sips(
         sip_id,
@@ -24,26 +22,22 @@ const createSIP = async (data) => {
       data.sip_amount,
       data.sip_day,
       data.start_date,
-      data.status
+      data.status,
     ];
 
     await db.query(query, values);
 
     return {
       success: true,
-      message: "SIP Created"
+      message: "SIP Created",
     };
-
-  } catch(err){
-
+  } catch (err) {
     throw err;
   }
 };
 
-const getSIP = async (sipId) => {
-
+export const getSIP = async (sipId: any) => {
   try {
-
     const query = `
       SELECT *
       FROM sips
@@ -53,20 +47,16 @@ const getSIP = async (sipId) => {
     const result = await db.query(query, [sipId]);
 
     return result.rows[0];
-
-  } catch(err){
-
+  } catch (err) {
     throw err;
   }
 };
 
-const processSIP = async (data) => {
-
+export const processSIP = async (data: any) => {
   const client = await db.connect();
 
   try {
-
-    await client.query('BEGIN');
+    await client.query("BEGIN");
 
     const sipQuery = `
       SELECT *
@@ -74,21 +64,16 @@ const processSIP = async (data) => {
       WHERE sip_id = $1
     `;
 
-    const sipResult = await client.query(
-      sipQuery,
-      [data.sip_id]
-    );
+    const sipResult = await client.query(sipQuery, [data.sip_id]);
 
     if (sipResult.rows.length === 0) {
-      throw new Error('SIP not found');
+      throw new Error("SIP not found");
     }
 
     const sip = sipResult.rows[0];
 
-    if (sip.status !== 'ACTIVE') {
-      throw new Error(
-        'Inactive SIP cannot be processed'
-      );
+    if (sip.status !== "ACTIVE") {
+      throw new Error("Inactive SIP cannot be processed");
     }
 
     const navQuery = `
@@ -99,24 +84,15 @@ const processSIP = async (data) => {
       LIMIT 1
     `;
 
-    const navResult = await client.query(
-      navQuery,
-      [sip.fund_id]
-    );
+    const navResult = await client.query(navQuery, [sip.fund_id]);
 
     if (navResult.rows.length === 0) {
-      throw new Error('NAV not found');
+      throw new Error("NAV not found");
     }
 
-    const nav = Number(
-      navResult.rows[0].nav_value
-    );
+    const nav = Number(navResult.rows[0].nav_value);
 
-    const units = Number(
-      (
-        data.transaction_amount / nav
-      ).toFixed(6)
-    );
+    const units = Number((data.transaction_amount / nav).toFixed(6));
 
     const insertQuery = `
       INSERT INTO transactions(
@@ -133,55 +109,41 @@ const processSIP = async (data) => {
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)
     `;
 
-    await client.query(
-      insertQuery,
-      [
-        data.transaction_id,
-        sip.sip_id,
-        sip.investor_id,
-        sip.fund_id,
-        data.transaction_type,
-        data.transaction_amount,
-        nav,
-        units,
-        data.transaction_date
-      ]
-    );
+    await client.query(insertQuery, [
+      data.transaction_id,
+      sip.sip_id,
+      sip.investor_id,
+      sip.fund_id,
+      data.transaction_type,
+      data.transaction_amount,
+      nav,
+      units,
+      data.transaction_date,
+    ]);
 
-    await client.query('COMMIT');
+    await client.query("COMMIT");
 
     return {
       success: true,
-      message: 'SIP processed successfully',
+      message: "SIP processed successfully",
       nav_used: nav,
-      units_allocated: units
+      units_allocated: units,
     };
+  } catch (err: any) {
+    await client.query("ROLLBACK");
 
-  } catch(err){
-
-    await client.query('ROLLBACK');
-
-    if (
-      err.code === '23505'
-    ) {
-
-      throw new Error(
-        'SIP already processed for this date'
-      );
+    if (err.code === "23505") {
+      throw new Error("SIP already processed for this date");
     }
 
     throw err;
-
   } finally {
-
     client.release();
   }
 };
 
-const getTransactions = async (sipId) => {
-
+export const getTransactions = async (sipId: any) => {
   try {
-
     const query = `
       SELECT *
       FROM transactions
@@ -191,16 +153,7 @@ const getTransactions = async (sipId) => {
     const result = await db.query(query, [sipId]);
 
     return result.rows;
-
-  } catch(err){
-
+  } catch (err) {
     throw err;
   }
-};
-
-module.exports = {
-  createSIP,
-  getSIP,
-  processSIP,
-  getTransactions,
 };

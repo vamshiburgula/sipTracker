@@ -1,6 +1,7 @@
-const db = require("../utility/dbManager");
+import db from "../utility/dbManager";
+import { Request, Response } from "express";
 
-exports.getDashboardSummary = async (req, res) => {
+export const getDashboardSummary = async (req: Request, res: Response) => {
   try {
     // Total Investors
     const investorResult = await db.query(`
@@ -22,7 +23,7 @@ exports.getDashboardSummary = async (req, res) => {
         cumulativeNAV: navResult.rows[0].cumulative_nav,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
 
     res.status(500).json({
@@ -32,7 +33,7 @@ exports.getDashboardSummary = async (req, res) => {
   }
 };
 
-exports.getRecentTransactions = async (req, res) => {
+export const getRecentTransactions = async (req: Request, res: Response) => {
   try {
     const result = await db.query(`
   SELECT
@@ -64,7 +65,7 @@ AS investor_name,
       success: true,
       data: result.rows,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
 
     res.status(500).json({

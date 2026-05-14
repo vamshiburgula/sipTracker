@@ -1,6 +1,5 @@
-const express = require("express");
-
-const {
+import express, { Request, Response } from "express";
+import {
   createInvestor,
   getInvestor,
   getInvestorHoldings,
@@ -9,7 +8,7 @@ const {
   logout,
   getAllInvestors,
   getInvestorAnalytics,
-} = require("../controllers/investorController.js");
+} from "../controllers/investorController.js";
 
 const router = express.Router();
 
@@ -29,4 +28,4 @@ router.get("/:investorId/networth", getInvestorNetworth);
 
 router.get("/:investorId", getInvestor);
 
-module.exports = router;
+export default router;

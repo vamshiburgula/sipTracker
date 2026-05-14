@@ -1,6 +1,6 @@
-const db = require("../utility/dbManager");
+import db from "../utility/dbManager";
 
-const insertInvestor = (data) => {
+export const insertInvestor = (data: any) => {
   return new Promise((resolve, reject) => {
     const query = `
             INSERT INTO investors(
@@ -24,7 +24,7 @@ const insertInvestor = (data) => {
         data.phone,
         data.pan_number,
       ],
-      (err, result) => {
+      (err: any, result: any) => {
         if (err) {
           reject(err);
         } else {
@@ -38,7 +38,7 @@ const insertInvestor = (data) => {
   });
 };
 
-const fetchInvestor = async (investorId) => {
+export const fetchInvestor = async (investorId: string) => {
   try {
     const query = `
       SELECT *
@@ -52,7 +52,7 @@ const fetchInvestor = async (investorId) => {
   }
 };
 
-const fetchAllInvestors = async () => {
+export const fetchAllInvestors = async () => {
   try {
     const query = `
 
@@ -90,7 +90,7 @@ const fetchAllInvestors = async () => {
   }
 };
 
-const fetchInvestorAnalytics = async () => {
+export const fetchInvestorAnalytics = async () => {
   try {
     const query = `
 
@@ -169,7 +169,7 @@ const fetchInvestorAnalytics = async () => {
   }
 };
 
-const fetchHoldings = async (investorId) => {
+export const fetchHoldings = async (investorId: string) => {
   try {
     const query = `
       SELECT
@@ -209,7 +209,7 @@ const fetchHoldings = async (investorId) => {
         nh.nav_value
     `;
 
-    const result = await db.query(query, [investorId]);
+    const result = await db.query(query, [investorId.toString()]);
 
     return result.rows;
   } catch (err) {
@@ -217,7 +217,7 @@ const fetchHoldings = async (investorId) => {
   }
 };
 
-const calculateNetworth = async (investorId) => {
+export const calculateNetworth = async (investorId: string) => {
   try {
     const query = `
       SELECT
@@ -258,7 +258,7 @@ const calculateNetworth = async (investorId) => {
   }
 };
 
-const loginUser = async (email) => {
+export const loginUser = async (email: string) => {
   try {
     const query = `
       SELECT *
@@ -274,19 +274,8 @@ const loginUser = async (email) => {
   }
 };
 
-const logoutUser = (token) => {
+export const logoutUser = (token: string) => {
   return {
     message: "Logout Successful",
   };
-};
-
-module.exports = {
-  insertInvestor,
-  fetchInvestor,
-  fetchAllInvestors,
-  fetchInvestorAnalytics,
-  fetchHoldings,
-  calculateNetworth,
-  loginUser,
-  logoutUser,
 };

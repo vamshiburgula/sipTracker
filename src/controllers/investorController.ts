@@ -1,42 +1,46 @@
-const {
+import { Request, Response } from "express";
+import {
   loginUser,
   insertInvestor,
   fetchInvestor,
+  fetchAllInvestors,
   fetchHoldings,
   calculateNetworth,
-  fetchAllInvestors,
   fetchInvestorAnalytics,
-} = require("../models/investorModel.js");
+} from "../models/investorModel";
 
-const { signJWT } = require("../utility/AuthManager.js");
+import { signJWT } from "../utility/AuthManager";
 
-const invalidTokens = [];
+export const invalidTokens: string | undefined | any = [];
 
-const createInvestor = async (req, res) => {
+export const createInvestor = async (req: Request, res: Response) => {
   try {
     const result = await insertInvestor(req.body);
 
     return res.status(201).json(result);
-  } catch (err) {
+  } catch (err: any) {
     return res.status(500).send(err.message);
   }
 };
 
-const getInvestor = async (req, res) => {
+export const getInvestor = async (
+  req: Request<{ investorId: string }>,
+  res: Response,
+) => {
   try {
-    const result = await fetchInvestor(req.params.investorId);
+    const result = await fetchInvestor(req.params.investorId.toString());
 
     if (!result) {
       return res.status(404).send("Investor not found");
     }
 
     return res.json(result);
-  } catch (err) {
+  } catch (err: any) {
     return res.status(500).send(err.message);
   }
 };
 
-const getAllInvestors = async (req, res) => {
+export const getAllInvestors = async (req: Request, res: Response) => {
   try {
     const investors = await fetchAllInvestors();
     res.status(200).json({
@@ -52,7 +56,7 @@ const getAllInvestors = async (req, res) => {
   }
 };
 
-const getInvestorAnalytics = async (req, res) => {
+export const getInvestorAnalytics = async (req: Request, res: Response) => {
   try {
     const analytics = await fetchInvestorAnalytics();
 
@@ -70,27 +74,33 @@ const getInvestorAnalytics = async (req, res) => {
   }
 };
 
-const getInvestorHoldings = async (req, res) => {
+export const getInvestorHoldings = async (
+  req: Request<{ investorId: string }>,
+  res: Response,
+) => {
   try {
     const result = await fetchHoldings(req.params.investorId);
 
     return res.json(result);
-  } catch (err) {
+  } catch (err: any) {
     return res.status(500).send(err.message);
   }
 };
 
-const getInvestorNetworth = async (req, res) => {
+export const getInvestorNetworth = async (
+  req: Request<{ investorId: string }>,
+  res: Response,
+) => {
   try {
     const result = await calculateNetworth(req.params.investorId);
 
     return res.json(result);
-  } catch (err) {
+  } catch (err: any) {
     return res.status(500).send(err.message);
   }
 };
 
-const login = async (req, res) => {
+export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
@@ -114,35 +124,23 @@ const login = async (req, res) => {
       message: "Login Successful",
       token: token,
     });
-  } catch (err) {
+  } catch (err: any) {
     return res.status(500).json({
       success: false,
       message: err.message,
     });
   }
 };
-const logout = async (req, res) => {
+export const logout = async (req: Request, res: Response) => {
   try {
-    const token = req.headers.authorization;
+    const token: string | undefined = req.headers.authorization;
 
     invalidTokens.push(token);
 
     return res.json({
       message: "Logout Successful",
     });
-  } catch (err) {
+  } catch (err: any) {
     return res.status(500).send(err.message);
   }
-};
-
-module.exports = {
-  createInvestor,
-  getInvestor,
-  getAllInvestors,
-  getInvestorAnalytics,
-  getInvestorHoldings,
-  getInvestorNetworth,
-  login,
-  logout,
-  invalidTokens,
 };
